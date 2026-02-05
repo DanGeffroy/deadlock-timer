@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'VALVEPulp';
+  src: url('./assets/VALVEPulp-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'VALVEOracle';
+  src: url('./assets/VALVEOracle-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-bg-primary: #0C0C0E;
+  --color-bg-surface: #1A1A1F;
+  --color-bg-surface-hover: #25252B;
+  --color-accent-gold: #E8BE86;
+  --color-accent-amber: #987556;
+  --color-text-primary: #FFF5E8;
+  --color-text-secondary: #A09080;
+  --color-danger: #E84040;
+  --color-warning: #E8A020;
+  --color-success: #40C080;
+
+  --font-sans: 'VALVEPulp', 'Inter', 'Open Sans', sans-serif;
+  --font-heading: 'VALVEOracle', Georgia, serif;
+}
+
+@layer base {
+  body {
+    @apply min-h-screen antialiased;
+    margin: 0;
+    background-image: url('./assets/bg_texture_darkest.jpg');
+    background-repeat: repeat;
+    background-size: 512px;
+  }
+}
+
+@layer components {
+  .glow-gold {
+    box-shadow: 0 0 12px rgba(232, 190, 134, 0.3);
+  }
+
+  .glow-warning {
+    box-shadow: 0 0 16px rgba(232, 160, 32, 0.4);
+  }
+
+  .glow-danger {
+    box-shadow: 0 0 20px rgba(232, 64, 64, 0.5);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, #987556, #E8BE86);
+  }
+
+  .gradient-accent-text {
+    background: linear-gradient(135deg, #987556, #E8BE86);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-gradient {
+    border-image: linear-gradient(135deg, #987556, #E8BE86) 1;
+  }
+}
+
+@keyframes pulse-warning {
+  0%, 100% { box-shadow: 0 0 12px rgba(232, 160, 32, 0.3); }
+  50% { box-shadow: 0 0 24px rgba(232, 160, 32, 0.6); }
+}
+
+@keyframes pulse-danger {
+  0%, 100% { box-shadow: 0 0 16px rgba(232, 64, 64, 0.4); }
+  50% { box-shadow: 0 0 32px rgba(232, 64, 64, 0.7); }
+}
+
+.animate-pulse-warning {
+  animation: pulse-warning 1.5s ease-in-out infinite;
+}
+
+.animate-pulse-danger {
+  animation: pulse-danger 1s ease-in-out infinite;
+}
