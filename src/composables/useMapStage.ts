@@ -27,7 +27,7 @@ export function useMapStage() {
   const { elapsed } = useMatchTimer()
 
   const currentStage = computed<MapStage>(() => {
-    let matched = MAP_STAGES[0]
+    let matched = MAP_STAGES[0]!
     for (const stage of MAP_STAGES) {
       if (elapsed.value >= stage.minTime) {
         matched = stage
@@ -37,7 +37,8 @@ export function useMapStage() {
   })
 
   const currentStageIndex = computed<number>(() => {
-    return MAP_STAGES.indexOf(currentStage.value)
+    const index = MAP_STAGES.indexOf(currentStage.value)
+    return index >= 0 ? index : 0
   })
 
   return {
