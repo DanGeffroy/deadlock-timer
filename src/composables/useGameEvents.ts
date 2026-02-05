@@ -150,6 +150,75 @@ function initializeEvents(): void {
   eventLog.value = []
 }
 
+/**
+ * Fast-forward event states to match a given elapsed time without playing sounds.
+ * Used when the user manually sets the timer.
+ */
+function initializeEventsAtTime(seconds: number): void {
+  const soundToggles = loadSoundToggles()
+  eventStates.value = EVENT_DEFINITIONS.map((def) => {
+    const base: GameEventState = {
+      definition: def,
+      status: 'upcoming',
+      countdown: def.firstSpawn - seconds,
+      nextSpawnTime: def.firstSpawn,
+      killCount: 0,
+      soundEnabled: soundToggles[def.id] !== false,
+      hasPlayedWarning30: false,
+      hasPlayedWarning10: false,
+      hasPlayedSpawn: false,
+    }
+
+    if (def.type === 'one-time-spawn' || def.type === 'milestone') {
+      if (seconds >= def.firstSpawn) {
+        base.status = 'completed'
+        base.countdown = 0
+        base.hasPlayedSpawn = true
+        base.hasPlayedWarning30 = true
+        base.hasPlayedWarning10 = true
+      } else {
+        base.countdown = def.firstSpawn - seconds
+        base.hasPlayedWarning30 = (def.firstSpawn - seconds) <= 30
+        base.hasPlayedWarning10 = (def.firstSpawn - seconds) <= 10
+      }
+    } else if (def.type === 'auto-recurring') {
+      const interval = def.interval!
+      if (seconds < def.firstSpawn) {
+        base.countdown = def.firstSpawn - seconds
+        base.nextSpawnTime = def.firstSpawn
+        base.hasPlayedWarning30 = (def.firstSpawn - seconds) <= 30
+        base.hasPlayedWarning10 = (def.firstSpawn - seconds) <= 10
+      } else {
+        const timeSinceFirst = seconds - def.firstSpawn
+        const cyclesPassed = Math.floor(timeSinceFirst / interval)
+        const nextOccurrence = def.firstSpawn + (cyclesPassed + 1) * interval
+        base.status = 'respawning'
+        base.countdown = nextOccurrence - seconds
+        base.nextSpawnTime = nextOccurrence
+        base.hasPlayedSpawn = true
+        base.hasPlayedWarning30 = (nextOccurrence - seconds) <= 30
+        base.hasPlayedWarning10 = (nextOccurrence - seconds) <= 10
+      }
+    } else if (def.type === 'manual-respawn') {
+      if (seconds >= def.firstSpawn) {
+        // Has already spawned initially — mark as available, waiting for player clear
+        base.status = 'available'
+        base.countdown = 0
+        base.hasPlayedSpawn = true
+        base.hasPlayedWarning30 = true
+        base.hasPlayedWarning10 = true
+      } else {
+        base.countdown = def.firstSpawn - seconds
+        base.hasPlayedWarning30 = (def.firstSpawn - seconds) <= 30
+        base.hasPlayedWarning10 = (def.firstSpawn - seconds) <= 10
+      }
+    }
+
+    return base
+  })
+  eventLog.value = []
+}
+
 function addLogEntry(time: number, message: string, icon: string): void {
   eventLog.value.unshift({ time, message, icon })
   // Keep last 50 entries
@@ -401,6 +470,7 @@ export function useGameEvents() {
     events: sortedEvents,
     eventLog,
     initializeEvents,
+    initializeEventsAtTime,
     markCleared,
     toggleEventSound,
   }

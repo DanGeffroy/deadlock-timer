@@ -49,6 +49,15 @@ function resume(): void {
   animationFrameId = requestAnimationFrame(tick)
 }
 
+function setTime(seconds: number): void {
+  const clamped = Math.max(0, seconds)
+  elapsed.value = clamped
+  pausedElapsed = clamped
+  if (isRunning.value && !isPaused.value) {
+    startTimestamp = performance.now()
+  }
+}
+
 function reset(): void {
   cancelAnimationFrame(animationFrameId)
   elapsed.value = 0
@@ -66,5 +75,6 @@ export function useMatchTimer() {
     pause,
     resume,
     reset,
+    setTime,
   }
 }

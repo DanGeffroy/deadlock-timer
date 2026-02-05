@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useGameEvents } from '../composables/useGameEvents'
+import { useMatchTimer } from '../composables/useMatchTimer'
 
 const props = defineProps<{
   visible: boolean
@@ -10,7 +11,56 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const { eventLog } = useGameEvents()
+const { eventLog, initializeEventsAtTime } = useGameEvents()
+const { elapsed, isRunning, setTime, start, pause } = useMatchTimer()
+
+// Timer setter state
+const setMinutes = ref(0)
+const setSeconds = ref(0)
+
+// Sync inputs with current elapsed when panel opens
+watch(() => props.visible, (vis) => {
+  if (vis) {
+    const total = Math.floor(elapsed.value)
+    setMinutes.value = Math.floor(total / 60)
+    setSeconds.value = total % 60
+  }
+})
+
+function applyTime(): void {
+  const targetSeconds = setMinutes.value * 60 + setSeconds.value
+  const wasRunning = isRunning.value
+
+  // If not running, start paused so setTime works on a running timer
+  if (!wasRunning) {
+    start()
+    pause()
+  }
+
+  setTime(targetSeconds)
+  initializeEventsAtTime(targetSeconds)
+
+  // If it wasn't running before, keep it paused
+  if (!wasRunning) {
+    // Already paused from above
+  }
+}
+
+function clampMinutes(e: Event): void {
+  const input = e.target as HTMLInputElement
+  let val = parseInt(input.value) || 0
+  if (val < 0) val = 0
+  if (val > 99) val = 99
+  setMinutes.value = val
+}
+
+function clampSeconds(e: Event): void {
+  const input = e.target as HTMLInputElement
+  let val = parseInt(input.value) || 0
+  if (val < 0) val = 0
+  if (val > 59) val = 59
+  setSeconds.value = val
+}
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -48,6 +98,47 @@ const displayLog = computed(() => eventLog.value.slice(0, 30))
           >
             ✕ Close
           </button>
+        </div>
+
+        <!-- Set Timer -->
+        <div class="mb-6">
+          <h3 class="font-heading text-sm font-semibold text-text-primary mb-3 uppercase tracking-wider">
+            Set Timer
+          </h3>
+          <div class="flex items-end gap-2">
+            <div class="flex-1">
+              <label class="block text-xs text-text-secondary mb-1">Minutes</label>
+              <input
+                type="number"
+                :value="setMinutes"
+                @input="clampMinutes"
+                min="0"
+                max="99"
+                class="w-full px-3 py-2 rounded-lg bg-bg-primary border border-accent-amber/20 text-text-primary text-sm tabular-nums focus:outline-none focus:border-accent-amber/60 transition-colors"
+              />
+            </div>
+            <span class="text-text-secondary text-lg font-bold pb-2">:</span>
+            <div class="flex-1">
+              <label class="block text-xs text-text-secondary mb-1">Seconds</label>
+              <input
+                type="number"
+                :value="setSeconds"
+                @input="clampSeconds"
+                min="0"
+                max="59"
+                class="w-full px-3 py-2 rounded-lg bg-bg-primary border border-accent-amber/20 text-text-primary text-sm tabular-nums focus:outline-none focus:border-accent-amber/60 transition-colors"
+              />
+            </div>
+            <button
+              @click="applyTime"
+              class="px-4 py-2 rounded-lg gradient-accent text-bg-primary font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
+              Set
+            </button>
+          </div>
+          <p class="text-text-secondary text-xs mt-2 italic">
+            Sets the match timer and updates all events accordingly.
+          </p>
         </div>
 
         <!-- Keyboard Shortcuts -->
