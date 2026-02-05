@@ -3,11 +3,20 @@ import type { GameEventDefinition, GameEventState, EventStatus, LogEntry } from 
 import { useMatchTimer } from './useMatchTimer'
 import { useAudio } from './useAudio'
 
+import iconEasyCamp from '../assets/map-icons/MapEasyCampIcon.png'
+import iconMediumCamp from '../assets/map-icons/MapMediumCampIcon.png'
+import iconHardCamp from '../assets/map-icons/MapHardCampIcon.png'
+import iconSacrifice from '../assets/map-icons/MapSacrificeMachineIcon.png'
+import iconMidBoss from '../assets/map-icons/64px-MidBossIcon.png'
+import iconSoulUrn from '../assets/map-icons/64px-Soul_Urn.png'
+import iconPowerupGun from '../assets/map-icons/64px-Powerup_gun.png'
+
 const EVENT_DEFINITIONS: GameEventDefinition[] = [
   {
     id: 'easy-camps',
     name: 'Easy Camps',
     icon: '🟢',
+    iconImage: iconEasyCamp,
     description: '4 small Denizen camps spawn in the jungle',
     firstSpawn: 2 * 60,
     type: 'one-time-spawn',
@@ -26,6 +35,7 @@ const EVENT_DEFINITIONS: GameEventDefinition[] = [
     id: 'powerups',
     name: 'Powerups',
     icon: '⚡',
+    iconImage: iconPowerupGun,
     description: '2 powerup locations spawn simultaneously',
     firstSpawn: 5 * 60,
     interval: 5 * 60,
@@ -36,6 +46,7 @@ const EVENT_DEFINITIONS: GameEventDefinition[] = [
     id: 'medium-camps',
     name: 'Medium Camps',
     icon: '🟡',
+    iconImage: iconMediumCamp,
     description: '22 medium Denizen camps spawn',
     firstSpawn: 6 * 60,
     respawnTime: 4 * 60 + 50,
@@ -46,6 +57,7 @@ const EVENT_DEFINITIONS: GameEventDefinition[] = [
     id: 'hard-camps',
     name: 'Hard Camps',
     icon: '🔴',
+    iconImage: iconHardCamp,
     description: '12 hard Denizen camps spawn',
     firstSpawn: 8 * 60,
     respawnTime: 5 * 60 + 35,
@@ -56,6 +68,7 @@ const EVENT_DEFINITIONS: GameEventDefinition[] = [
     id: 'vault-camps',
     name: 'Vault Camps',
     icon: '🔒',
+    iconImage: iconSacrifice,
     description: "Sinner's Sacrifice machines — 10 locations",
     firstSpawn: 8 * 60,
     respawnTime: 5 * 60,
@@ -66,6 +79,7 @@ const EVENT_DEFINITIONS: GameEventDefinition[] = [
     id: 'soul-urn',
     name: 'Soul Urn',
     icon: '🏺',
+    iconImage: iconSoulUrn,
     description: 'Descends from the sky, grants souls to the team',
     firstSpawn: 10 * 60,
     interval: 5 * 60,
@@ -76,6 +90,7 @@ const EVENT_DEFINITIONS: GameEventDefinition[] = [
     id: 'mid-boss',
     name: 'Mid-Boss',
     icon: '💀',
+    iconImage: iconMidBoss,
     description: 'Drops Rejuvenator crystal — 4min team buff',
     firstSpawn: 10 * 60,
     respawnTimes: [7 * 60, 6 * 60, 5 * 60],
@@ -156,7 +171,9 @@ function markCleared(eventId: string): void {
   let respawnDuration: number
   if (def.respawnTimes) {
     const idx = Math.min(state.killCount - 1, def.respawnTimes.length - 1)
-    respawnDuration = def.respawnTimes[idx]
+    const duration = def.respawnTimes[idx]
+    if (duration === undefined) return
+    respawnDuration = duration
   } else if (def.respawnTime) {
     respawnDuration = def.respawnTime
   } else {

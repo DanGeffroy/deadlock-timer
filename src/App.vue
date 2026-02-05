@@ -2,6 +2,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import AppHeader from './components/AppHeader.vue'
 import MatchTimer from './components/MatchTimer.vue'
+import MiniMap from './components/MiniMap.vue'
+import MapLegend from './components/MapLegend.vue'
 import EventList from './components/EventList.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import { useMatchTimer } from './composables/useMatchTimer'
@@ -54,9 +56,25 @@ onUnmounted(() => {
 
 <template>
   <div class="min-h-screen text-text-primary font-sans">
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-7xl mx-auto">
       <AppHeader @toggle-settings="settingsVisible = !settingsVisible" />
-      <MatchTimer />
+
+      <!-- Desktop: 2-column grid. Mobile: stacked -->
+      <div class="px-4 sm:px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-x-6 gap-y-4 pb-4">
+          <!-- Row 1 left: Timer -->
+          <div class="flex items-center justify-center">
+            <MatchTimer />
+          </div>
+          <!-- Row 1+2 right: Minimap (spans 2 rows on desktop) -->
+          <div class="lg:row-span-2">
+            <MiniMap />
+          </div>
+          <!-- Row 2 left: Map Legend -->
+          <MapLegend />
+        </div>
+      </div>
+
       <div class="border-t border-accent-amber/10 mx-4 sm:mx-6" />
       <EventList />
     </div>

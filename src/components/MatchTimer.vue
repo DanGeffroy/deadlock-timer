@@ -25,7 +25,7 @@ function handleReset(): void {
 </script>
 
 <template>
-  <section class="flex flex-col items-center py-6 sm:py-10">
+  <section class="flex flex-col items-center justify-center py-4 sm:py-6">
     <!-- Timer Display -->
     <div class="relative mb-6 sm:mb-8">
       <div

@@ -103,7 +103,8 @@ const priorityIndicator = computed(() => {
     :class="[borderClass, urgencyClass]"
     :style="cardBgStyle"
   >
-    <span class="text-lg flex-shrink-0">{{ event.definition.icon }}</span>
+    <img v-if="event.definition.iconImage" :src="event.definition.iconImage" :alt="event.definition.name" class="w-7 h-7 flex-shrink-0 object-contain" draggable="false" />
+    <span v-else class="text-lg flex-shrink-0">{{ event.definition.icon }}</span>
     <span class="font-semibold text-sm flex-shrink-0 min-w-[120px]">{{ event.definition.name }}</span>
     <span class="text-xs px-2 py-0.5 rounded-full" :class="priorityIndicator">
       {{ event.definition.priority }}
@@ -136,8 +137,9 @@ const priorityIndicator = computed(() => {
   >
     <!-- Header row -->
     <div class="flex items-start justify-between mb-2">
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">{{ event.definition.icon }}</span>
+      <div class="flex items-center gap-3">
+        <img v-if="event.definition.iconImage" :src="event.definition.iconImage" :alt="event.definition.name" class="w-10 h-10 flex-shrink-0 object-contain" draggable="false" />
+        <span v-else class="text-3xl">{{ event.definition.icon }}</span>
         <div>
           <h3 class="font-heading font-semibold text-sm sm:text-base text-text-primary tracking-wide uppercase">
             {{ event.definition.name }}

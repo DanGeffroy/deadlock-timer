@@ -6,6 +6,7 @@ export interface GameEventDefinition {
   id: string
   name: string
   icon: string
+  iconImage?: string
   description: string
   firstSpawn: number // seconds
   interval?: number // seconds, for auto-recurring
