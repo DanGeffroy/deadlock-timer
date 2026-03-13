@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { GameEventState } from '../types'
 import bgTexture from '../assets/bg_texture.jpg'
 
@@ -12,6 +12,29 @@ const emit = defineEmits<{
   (e: 'mark-cleared', id: string): void
   (e: 'toggle-sound', id: string): void
 }>()
+
+const showDescription = ref(false)
+const cardRef = ref<HTMLElement | null>(null)
+
+function toggleDescription() {
+  showDescription.value = !showDescription.value
+}
+
+function handleOutsideClick(event: MouseEvent) {
+  if (cardRef.value && !cardRef.value.contains(event.target as Node)) {
+    showDescription.value = false
+  }
+}
+
+onMounted(() => {
+  nextTick(() => {
+    document.addEventListener('click', handleOutsideClick)
+  })
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleOutsideClick)
+})
 
 const countdownDisplay = computed(() => {
   const seconds = Math.max(0, Math.floor(props.event.countdown))
@@ -99,9 +122,15 @@ const priorityIndicator = computed(() => {
   <!-- Compact mode -->
   <div
     v-if="compact"
-    class="flex items-center gap-3 px-3 py-2 rounded-lg bg-bg-surface border transition-all duration-300"
+    ref="cardRef"
+    class="relative flex items-center gap-3 px-3 py-2 rounded-lg bg-bg-surface border transition-all duration-300 cursor-pointer select-none"
     :class="[borderClass, urgencyClass]"
     :style="cardBgStyle"
+    tabindex="0"
+    :aria-describedby="showDescription ? `desc-${event.definition.id}` : undefined"
+    @click="toggleDescription"
+    @keydown.enter.prevent="toggleDescription"
+    @keydown.space.prevent="toggleDescription"
   >
     <img v-if="event.definition.iconImage" :src="event.definition.iconImage" :alt="event.definition.name" class="w-7 h-7 flex-shrink-0 object-contain" draggable="false" />
     <span v-else class="text-lg flex-shrink-0">{{ event.definition.icon }}</span>
@@ -114,26 +143,45 @@ const priorityIndicator = computed(() => {
     </span>
     <button
       v-if="showClearButton"
-      @click="emit('mark-cleared', event.definition.id)"
+      @click.stop="emit('mark-cleared', event.definition.id)"
       class="px-2 py-0.5 rounded text-xs bg-success/20 text-success hover:bg-success/30 transition-colors flex-shrink-0"
     >
       Cleared
     </button>
     <button
-      @click="emit('toggle-sound', event.definition.id)"
+      @click.stop="emit('toggle-sound', event.definition.id)"
       class="text-sm flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
       :title="event.soundEnabled ? 'Mute this event' : 'Unmute this event'"
     >
       {{ event.soundEnabled ? '🔔' : '🔕' }}
     </button>
+
+    <!-- Description tooltip -->
+    <div
+      v-if="showDescription"
+      :id="`desc-${event.definition.id}`"
+      role="tooltip"
+      @click.stop
+      class="absolute left-0 right-0 top-full mt-1 z-20 rounded-lg border border-accent-amber/40 bg-bg-primary px-3 py-2 shadow-lg"
+    >
+      <!-- Arrow pointing up -->
+      <div aria-hidden="true" class="absolute -top-1.5 left-4 w-3 h-3 rotate-45 border-l border-t border-accent-amber/40 bg-bg-primary" />
+      <p class="text-text-secondary text-xs leading-relaxed">{{ event.definition.description }}</p>
+    </div>
   </div>
 
   <!-- Full card mode -->
   <div
     v-else
-    class="rounded-lg bg-bg-surface border p-4 transition-all duration-300 hover:bg-bg-surface-hover"
+    ref="cardRef"
+    class="relative rounded-lg bg-bg-surface border p-4 transition-all duration-300 hover:bg-bg-surface-hover cursor-pointer select-none"
     :class="[borderClass, urgencyClass]"
     :style="cardBgStyle"
+    tabindex="0"
+    :aria-describedby="showDescription ? `desc-${event.definition.id}` : undefined"
+    @click="toggleDescription"
+    @keydown.enter.prevent="toggleDescription"
+    @keydown.space.prevent="toggleDescription"
   >
     <!-- Header row -->
     <div class="flex items-start justify-between mb-2">
@@ -193,7 +241,7 @@ const priorityIndicator = computed(() => {
     <div class="mt-3 flex items-center justify-between">
       <button
         v-if="showClearButton"
-        @click="emit('mark-cleared', event.definition.id)"
+        @click.stop="emit('mark-cleared', event.definition.id)"
         class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-success/20 text-success hover:bg-success/30 transition-colors border border-success/30"
       >
         Mark Cleared / Killed
@@ -201,12 +249,25 @@ const priorityIndicator = computed(() => {
       <div v-else />
 
       <button
-        @click="emit('toggle-sound', event.definition.id)"
+        @click.stop="emit('toggle-sound', event.definition.id)"
         class="text-base opacity-60 hover:opacity-100 transition-opacity"
         :title="event.soundEnabled ? 'Mute this event' : 'Unmute this event'"
       >
         {{ event.soundEnabled ? '🔔' : '🔕' }}
       </button>
+    </div>
+
+    <!-- Description tooltip -->
+    <div
+      v-if="showDescription"
+      :id="`desc-${event.definition.id}`"
+      role="tooltip"
+      @click.stop
+      class="absolute left-0 right-0 top-full mt-1 z-20 rounded-lg border border-accent-amber/40 bg-bg-primary px-3 py-2 shadow-lg"
+    >
+      <!-- Arrow pointing up -->
+      <div aria-hidden="true" class="absolute -top-1.5 left-4 w-3 h-3 rotate-45 border-l border-t border-accent-amber/40 bg-bg-primary" />
+      <p class="text-text-secondary text-xs leading-relaxed">{{ event.definition.description }}</p>
     </div>
   </div>
 </template>
